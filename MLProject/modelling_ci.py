@@ -40,29 +40,31 @@ def train_with_tuning(df):
     ]
 
     for params in param_grid:
-        model = RandomForestClassifier(
-            n_estimators=params["n_estimators"],
-            max_depth=params["max_depth"],
-            random_state=42
-        )
+        # Nested run untuk setiap kombinasi param
+        with mlflow.start_run(nested=True):
+            model = RandomForestClassifier(
+                n_estimators=params["n_estimators"],
+                max_depth=params["max_depth"],
+                random_state=42
+            )
 
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
 
-        # LOG PARAM
-        mlflow.log_param("n_estimators", params["n_estimators"])
-        mlflow.log_param("max_depth", params["max_depth"])
+            # LOG PARAM
+            mlflow.log_param("n_estimators", params["n_estimators"])
+            mlflow.log_param("max_depth", params["max_depth"])
 
-        # LOG METRIC
-        mlflow.log_metric("accuracy", accuracy_score(y_test, y_pred))
-        mlflow.log_metric("precision", precision_score(y_test, y_pred))
-        mlflow.log_metric("recall", recall_score(y_test, y_pred))
-        mlflow.log_metric("f1_score", f1_score(y_test, y_pred))
+            # LOG METRIC
+            mlflow.log_metric("accuracy", accuracy_score(y_test, y_pred))
+            mlflow.log_metric("precision", precision_score(y_test, y_pred))
+            mlflow.log_metric("recall", recall_score(y_test, y_pred))
+            mlflow.log_metric("f1_score", f1_score(y_test, y_pred))
 
-        # LOG MODEL
-        mlflow.sklearn.log_model(model, "sklearn-model")
+            # LOG MODEL
+            mlflow.sklearn.log_model(model, "sklearn-model")
 
-        print("Run selesai (CI):", params)
+            print("Run selesai (CI):", params)
 
 
 if __name__ == "__main__":
