@@ -1,0 +1,14 @@
+# Python cache
+__pycache__/
+*.pyc
+
+# MLflow
+mlruns/
+
+# Environment
+.env
+.venv
+env/
+
+# OS
+.DS_Store
