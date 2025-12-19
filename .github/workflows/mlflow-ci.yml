@@ -10,21 +10,24 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
-    - name: Install Miniconda and setup environment
-      uses: goanpeca/setup-miniconda@v1
+    - name: Setup Miniconda
+      uses: conda-incubator/setup-miniconda@v3
       with:
-        auto-update-conda: true
-        activate-environment: mlflow-env        # name di conda.yaml
-        environment-file: MLProject/conda.yaml   # path ke file conda.yaml
-        python-version: 3.10
+        activate-environment: mlflow-env
+        environment-file: MLProject/conda.yaml
+        auto-activate-base: false
 
-    - name: Install pip dependencies as fallback
+    - name: Verify Conda Environment
+      shell: bash -l {0}
       run: |
-        pip install mlflow
-        pip install -r MLProject/requirements.txt
+        echo "Python version:"
+        python --version
+        echo "MLflow version:"
+        mlflow --version
 
     - name: Run MLflow Project
+      shell: bash -l {0}
       run: |
         mlflow run ./MLProject
