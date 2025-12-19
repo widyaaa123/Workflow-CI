@@ -1,7 +1,6 @@
 import pandas as pd
 import mlflow
 import mlflow.sklearn
-import joblib
 
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier
@@ -13,10 +12,10 @@ def load_data(path):
     return pd.read_csv(path)
 
 
-# TRAIN + TUNING + MLFLOW
+# TRAIN + TUNING + MLFLOW (TANPA start_run)
 def train_with_tuning(df):
 
-    # SET EXPERIMENT (BOLEH, AMAN)
+    # SET EXPERIMENT (BOLEH)
     mlflow.set_experiment("Widya-Experiment-Tuning")
 
     # TARGET
@@ -34,7 +33,7 @@ def train_with_tuning(df):
     X = df.drop(columns=[c for c in drop_cols if c in df.columns])
     X = X.select_dtypes(include=["int64", "float64"])
 
-    # SPLIT DATA
+    # SPLIT
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42
     )
@@ -44,33 +43,31 @@ def train_with_tuning(df):
         {"n_estimators": 100, "max_depth": None},
     ]
 
-    # LOOP TUNING → NESTED RUN (INI KUNCINYA)
     for params in param_grid:
-        with mlflow.start_run(nested=True):
 
-            model = RandomForestClassifier(
-                n_estimators=params["n_estimators"],
-                max_depth=params["max_depth"],
-                random_state=42
-            )
+        model = RandomForestClassifier(
+            n_estimators=params["n_estimators"],
+            max_depth=params["max_depth"],
+            random_state=42
+        )
 
-            model.fit(X_train, y_train)
-            y_pred = model.predict(X_test)
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
 
-            # LOG PARAM
-            mlflow.log_param("n_estimators", params["n_estimators"])
-            mlflow.log_param("max_depth", params["max_depth"])
+        # LOG PARAM (OVERWRITE AMAN DI SATU RUN)
+        mlflow.log_param("n_estimators", params["n_estimators"])
+        mlflow.log_param("max_depth", params["max_depth"])
 
-            # LOG METRIC
-            mlflow.log_metric("accuracy", accuracy_score(y_test, y_pred))
-            mlflow.log_metric("precision", precision_score(y_test, y_pred))
-            mlflow.log_metric("recall", recall_score(y_test, y_pred))
-            mlflow.log_metric("f1_score", f1_score(y_test, y_pred))
+        # LOG METRIC
+        mlflow.log_metric("accuracy", accuracy_score(y_test, y_pred))
+        mlflow.log_metric("precision", precision_score(y_test, y_pred))
+        mlflow.log_metric("recall", recall_score(y_test, y_pred))
+        mlflow.log_metric("f1_score", f1_score(y_test, y_pred))
 
-            # LOG MODEL
-            mlflow.sklearn.log_model(model, "sklearn-model")
+        # LOG MODEL (TIMPA → MODEL TERAKHIR)
+        mlflow.sklearn.log_model(model, "sklearn-model")
 
-            print("Run selesai:", params)
+        print("Selesai training:", params)
 
 
 # MAIN
