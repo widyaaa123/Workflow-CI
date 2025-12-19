@@ -13,9 +13,7 @@ def load_data(path):
 
 
 def train_with_tuning(df):
-    # SET EXPERIMENT (WAJIB SAMA DENGAN MLFLOW PROJECT)
-    mlflow.set_experiment("Widya-Experiment-Tuning")
-
+    
     # TARGET
     y = (df["Quantity"] > df["Quantity"].median()).astype(int)
 
@@ -41,7 +39,6 @@ def train_with_tuning(df):
         {"n_estimators": 100, "max_depth": None},
     ]
 
-    # ⚠️ TIDAK ADA start_run
     for params in param_grid:
         model = RandomForestClassifier(
             n_estimators=params["n_estimators"],
